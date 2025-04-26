@@ -1,25 +1,41 @@
-package models 
+package models
 
-import "gorm.io/gorm"
+import (
+    "errors"
 
-type Gender string
-
-const (
-	Male   Gender = "male"
-	Female Gender = "female"
+    "golang.org/x/crypto/bcrypt"    // ИЗМЕНЕНО
+    "gorm.io/gorm"
 )
 
 type User struct {
-	gorm.Model `json:"-"`
-	Username   string `json:"username"`
-	Password   string `json:"-"`
-	Gender     Gender `json:"gender"`
+    ID           uint   `gorm:"primaryKey"`
+    Username     string `gorm:"uniqueIndex;not null"`
+    PasswordHash string `gorm:"not null"`     // ИЗМЕНЕНО: переименовано из Password
 }
 
-func NewUser(username, password string, gender Gender) *User {
-	return &User{
-		Username: username,
-		Password: password,
-		Gender:   gender,
-	}
+// Создаёт нового пользователя с хешированным паролем
+func CreateUser(username, password string) error {
+    hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+    if err != nil {
+        return err
+    }
+    user := User{Username: username, PasswordHash: string(hash)}
+    return db.Create(&user).Error
+}
+
+// Находит пользователя по имени
+func FindUserByUsername(username string) (*User, error) {
+    var u User
+    if err := db.Where("username = ?", username).First(&u).Error; err != nil {
+        return nil, err
+    }
+    return &u, nil
+}
+
+// Сравнивает хеш с введённым паролем
+func ComparePassword(hash, password string) error {
+    if err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)); err != nil {
+        return errors.New("password mismatch")
+    }
+    return nil
 }

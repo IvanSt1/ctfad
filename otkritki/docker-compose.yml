@@ -1,22 +1,45 @@
-version: "2.9"
+version: "3.8"
+
 services:
+  db:
+    image: mysql:8
+    restart: unless-stopped
+    mem_limit: 1024M
+    pids_limit: 256
+    cpus: 2
+    env_file:
+      - .env
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - '3306:3306'
+
   backend:
     build:
       context: ./backend
     depends_on:
       - db
     restart: unless-stopped
-    pids_limit: 256
     mem_limit: 1024M
+    pids_limit: 256
     cpus: 2
-
     env_file:
       - .env
     environment:
       - PORT=8083
-      - MYSQL_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - DBNAME=${MYSQL_DATABASE}
-    ports: 
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=${MYSQL_DATABASE}
+      - DB_USER=${MYSQL_USER}               # задайте в .env, напр. appuser
+      - DB_PASSWORD=${MYSQL_PASSWORD}       # задайте в .env, напр. strongpassword
+      - COOKIE_AUTH_KEY=${COOKIE_AUTH_KEY}
+      - COOKIE_ENC_KEY=${COOKIE_ENC_KEY}
+      - CSRF_KEY=${CSRF_KEY}
+      - CORS_ALLOWED=${CORS_ALLOWED}
+    ports:
       - '8083:8083'
 
   frontend:
@@ -24,26 +47,16 @@ services:
       context: ./frontend
     depends_on:
       - backend
-      - db
-    restart: unless-stopped 
-    pids_limit: 256
-    mem_limit: 1024M
-    cpus: 2
-    ports:
-      - '31338:31338'
-
-  db:
-    image: mysql
     restart: unless-stopped
-    pids_limit: 256
     mem_limit: 1024M
+    pids_limit: 256
     cpus: 2
-    volumes:
-      - ./db/:/var/lib/mysql
     env_file:
       - .env
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-    expose:
-      - 3306
+      - REACT_APP_API_URL=http://localhost:8083
+    ports:
+      - '31338:31338'
+
+volumes:
+  db_data:

