@@ -1,38 +1,14 @@
-# backend/Dockerfile
-
-# 1) Builder stage: compile static Go binary
-FROM golang:1.23 AS builder
-
-# Disable CGO for static binary
-ENV CGO_ENABLED=0 \
-    GOOS=linux \
-    GOARCH=amd64
+FROM golang:1.22 as builder
 
 WORKDIR /app
-
-# Copy go.mod first
-COPY go.mod ./
-
-# Copy all source files
 COPY . .
 
-# Generate go.sum and download all dependencies
-RUN go mod tidy \
-    && go mod download
+RUN go mod download
+ENV GOCACHE=/root/.cache/go-build
+RUN --mount=type=cache,target="/root/.cache/go-build" go build -o otkritki
 
-# Build static binary with optimizations
-RUN go build -o otkritki -ldflags="-s -w"
-
-# 2) Final stage: minimal image with statically linked binary
-FROM gcr.io/distroless/static:nonroot AS runner
-
+FROM ubuntu:22.04
+RUN mkdir /app
 WORKDIR /app
-COPY --from=builder /app/otkritki ./otkritki
-USER nonroot:nonroot
-ENTRYPOINT ["./otkritki"]: minimal image with statically linked binary
-FROM gcr.io/distroless/static:nonroot AS runner
-
-WORKDIR /app
-COPY --from=builder /app/otkritki ./otkritki
-USER nonroot:nonroot
+COPY --from=builder /app/otkritki .
 ENTRYPOINT ["./otkritki"]

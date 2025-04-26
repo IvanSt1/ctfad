@@ -1,25 +1,25 @@
-package models
+package models 
 
-import "golang.org/x/crypto/bcrypt"
+import "gorm.io/gorm"
 
-// Gender — тип пола пользователя.
 type Gender string
 
 const (
-    Male   Gender = "male"
-    Female Gender = "female"
+	Male   Gender = "male"
+	Female Gender = "female"
 )
 
-// User описывает модель пользователя.
 type User struct {
-    ID           uint   `gorm:"primaryKey"`
-    // Явно задаём VARCHAR(100) и уникальный индекс
-    Username     string `gorm:"type:varchar(100);uniqueIndex;not null"`
-    PasswordHash string `gorm:"not null"`
-    Gender       Gender `gorm:"type:ENUM('male','female');not null"`
+	gorm.Model `json:"-"`
+	Username   string `json:"username"`
+	Password   string `json:"-"`
+	Gender     Gender `json:"gender"`
 }
 
-// ComparePassword сравнивает хеш и пароль.
-func ComparePassword(hash, password string) error {
-    return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+func NewUser(username, password string, gender Gender) *User {
+	return &User{
+		Username: username,
+		Password: password,
+		Gender:   gender,
+	}
 }

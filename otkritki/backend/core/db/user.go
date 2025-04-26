@@ -1,31 +1,47 @@
 package db
 
 import (
-    "github.com/IvanSt1/ctfad/otkritki/backend/core/models"
+	"errors"
+	"otkritki/core/models"
 )
 
-// AddUser создаёт нового пользователя в базе и возвращает его с заполненным ID.
-func AddUser(user *models.User) (*models.User, error) {
-    if err := GetDB().Create(user).Error; err != nil {
-        return nil, err
-    }
-    return user, nil
+func (db *DB) AddUser(user *models.User) (id uint, err error) {
+	if _, err := db.GetUserByName(user.Username); err == nil {
+		return 0, errors.New("User alerady exists")
+	}
+	if err := db.db.Create(user).Error; err != nil {
+		return 0, errors.New("Could not add user")
+	}
+	return user.ID, nil
 }
 
-// GetUserById ищет пользователя по ID.
-func GetUserById(id uint) (*models.User, error) {
-    var u models.User
-    if err := GetDB().First(&u, id).Error; err != nil {
-        return nil, err
-    }
-    return &u, nil
+func (db *DB) GetUserById(id uint) (*models.User, error) {
+	var result models.User
+	if err := db.db.First(&result, id).Error; err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
-// GetUserByName ищет пользователя по имени.
-func GetUserByName(username string) (*models.User, error) {
-    var u models.User
-    if err := GetDB().Where("username = ?", username).First(&u).Error; err != nil {
-        return nil, err
-    }
-    return &u, nil
+func (db *DB) GetUserByName(name string) (*models.User, error) {
+	var result models.User
+	if err := db.db.Where(
+		&models.User{
+			Username: name,
+		}).First(&result).Error; err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (db *DB) GetUserByNameAndPassword(name, pass string) (*models.User, error) {
+	var result models.User
+	if err := db.db.Where(
+		&models.User{
+			Username: name,
+			Password: pass,
+		}).Find(&result).Error; err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
