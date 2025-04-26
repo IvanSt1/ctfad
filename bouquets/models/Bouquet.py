@@ -37,6 +37,9 @@ class Bouquet:
 
     @staticmethod
     def filter_bouquets(filter, value, username):
+        allowed_filters = ['name', 'description']
+        if filter not in allowed_filters:
+            return
         query = f"SELECT id, name, owner, cost, description, sent_to FROM bouquet WHERE owner = ? AND {filter} = ?"
         print(query)
         res = connection_manager(query, username, value)
