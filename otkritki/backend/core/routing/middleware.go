@@ -4,18 +4,18 @@ import (
     "encoding/json"
     "net/http"
 
-    "github.com/IvanSt1/ctfad/otkritki/backend/core/db"
     "github.com/gorilla/sessions"
+    "github.com/IvanSt1/ctfad/otkritki/backend/core/db"
 )
 
-// abort отправляет JSON-ошибку и статус 400.
+// abort отвечает JSON-ошибкой и статусом Bad Request
 func abort(w http.ResponseWriter, message string) {
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(http.StatusBadRequest)
     json.NewEncoder(w).Encode(map[string]string{"error": message})
 }
 
-// AuthMiddleware проверяет сессию и существование пользователя.
+// AuthMiddleware проверяет сессию и существование пользователя
 func AuthMiddleware(store *sessions.CookieStore, cookieName string) func(http.Handler) http.Handler {
     return func(next http.Handler) http.Handler {
         return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
