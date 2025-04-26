@@ -1,63 +1,25 @@
 package routing
 
 import (
-	"encoding/json"
-	"otkritki/core/models"
-	"log"
-	"net/http"
-	"strconv"
-	"strings"
+    "encoding/json"
+    "net/http"
+
+    "github.com/gorilla/mux"
+    "github.com/IvanSt1/ctfad/otkritki/backend/core/db"
 )
 
-func CardPage(w http.ResponseWriter, r *http.Request) {
-	cardId, err := strconv.Atoi(r.URL.Query().Get("id"))
-	if err != nil {
-		abort(w, "Invalid card Id specified")
-		return
-	}
-	card, err := database.GetCardById(uint(cardId))
-	if err != nil {
-		abort(w, "No such card found")
-		return
-	}
-	session, _ := cookieStore.Get(r, cookieName)
-	userID := session.Values[idKey].(uint)
-	user, _ := database.GetUserById(userID)
-
-	if !strings.Contains(card.To, user.Username) && card.From != user.Username {
-		abort(w, "This card does not belong to you")
-		return
-	}
-
-	response, _ := json.Marshal(&card)
-
-	w.WriteHeader(200)
-	if _, err := w.Write(response); err != nil {
-		log.Println(err)
-	}
+// RegisterRoutes настраивает GET-маршруты
+func RegisterRoutes(r *mux.Router) {
+    r.HandleFunc("/api/cards", listCardsHandler).Methods("GET")
 }
 
-func GetCards(w http.ResponseWriter, r *http.Request) {
-	var response []models.GiftCard
-
-	session, _ := cookieStore.Get(r, cookieName)
-	userID := session.Values[idKey].(uint)
-	user, _ := database.GetUserById(userID)
-
-	if latestVar := r.URL.Query().Get("latest"); latestVar == "" {
-		recvCards, _ := database.GetCardByReceiver(user.Username)
-		response = append(response, *recvCards...)
-	} else if latest, err := strconv.Atoi(latestVar); err != nil {
-		abort(w, "Invalid latest variable")
+// listCardsHandler возвращает все открытки в формате JSON
+func listCardsHandler(w http.ResponseWriter, r *http.Request) {
+    cards, err := db.ListCards()
+    if err != nil {
+        http.Error(w, "Internal Server Error", http.StatusInternalServerError)
         return
-	} else {
-		latestCards, _ := database.GetLatestCards(user.Username, latest)
-		response = append(response, *latestCards...)
-	}
-
-	resp, _ := json.Marshal(&response)
-	w.WriteHeader(http.StatusOK)
-	if _, err := w.Write(resp); err != nil {
-		log.Println(err)
-	}
+    }
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(cards)
 }
