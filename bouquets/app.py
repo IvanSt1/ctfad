@@ -11,7 +11,7 @@ app = Flask(__name__)
 app.register_blueprint(AuthBp)
 app.register_blueprint(BouquetBp)
 app.register_blueprint(ProfileBp)
-app.config["SECRET_KEY"] = "dofkaodfjrfojdojwdoajcojcasdf"
+app.config["SECRET_KEY"] = "very_secret"
 app.config["UUID"] = crypto_helper.generate_rnd_string(32)
 
 init_db()
