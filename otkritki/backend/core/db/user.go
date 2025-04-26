@@ -1,47 +1,37 @@
 package db
 
 import (
-	"errors"
-	"otkritki/core/models"
+    "fmt"
+    "os"
+
+    "github.com/IvanSt1/ctfad/otkritki/backend/core/models"
+    "gorm.io/driver/mysql"
+    "gorm.io/gorm"
 )
 
-func (db *DB) AddUser(user *models.User) (id uint, err error) {
-	if _, err := db.GetUserByName(user.Username); err == nil {
-		return 0, errors.New("User alerady exists")
-	}
-	if err := db.db.Create(user).Error; err != nil {
-		return 0, errors.New("Could not add user")
-	}
-	return user.ID, nil
+var db *gorm.DB
+
+func init() {
+    dsn := fmt.Sprintf(
+        "%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+        os.Getenv("MYSQL_USER"),
+        os.Getenv("MYSQL_PASSWORD"),
+        os.Getenv("DB_HOST"),
+        os.Getenv("DB_PORT"),
+        os.Getenv("DB_NAME"),
+    )
+
+    var err error
+    db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+    if err != nil {
+        panic("failed to connect database: " + err.Error())
+    }
+
+    // Миграция модели User из core/models
+    db.AutoMigrate(&models.User{})
 }
 
-func (db *DB) GetUserById(id uint) (*models.User, error) {
-	var result models.User
-	if err := db.db.First(&result, id).Error; err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-func (db *DB) GetUserByName(name string) (*models.User, error) {
-	var result models.User
-	if err := db.db.Where(
-		&models.User{
-			Username: name,
-		}).First(&result).Error; err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-func (db *DB) GetUserByNameAndPassword(name, pass string) (*models.User, error) {
-	var result models.User
-	if err := db.db.Where(
-		&models.User{
-			Username: name,
-			Password: pass,
-		}).Find(&result).Error; err != nil {
-		return nil, err
-	}
-	return &result, nil
+// GetDB возвращает *gorm.DB
+func GetDB() *gorm.DB {
+    return db
 }

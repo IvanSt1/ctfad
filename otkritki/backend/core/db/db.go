@@ -1,33 +1,37 @@
 package db
 
 import (
-	"errors"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
+    "fmt"
+    "os"
+
+    "gorm.io/driver/mysql"
+    "gorm.io/gorm"
 )
 
-type DB struct {
-	db *gorm.DB
+var db *gorm.DB
+
+// init открывает соединение и выполняет миграции
+func init() {
+    dsn := fmt.Sprintf(
+        "%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+        os.Getenv("MYSQL_USER"),
+        os.Getenv("MYSQL_PASSWORD"),
+        os.Getenv("DB_HOST"),
+        os.Getenv("DB_PORT"),
+        os.Getenv("DB_NAME"),
+    )
+
+    var err error
+    db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+    if err != nil {
+        panic("failed to connect database: " + err.Error())
+    }
+
+    // Авто-миграция модели Card
+    db.AutoMigrate(&Card{})
 }
 
-func NewDb(connectionString string, Structs ...any) *DB {
-	db, err := gorm.Open(mysql.Open(connectionString), &gorm.Config{})
-	if err != nil {
-		panic(err)
-	}
-	if err := db.AutoMigrate(Structs...); err != nil {
-		panic(err)
-	}
-	return &DB{
-		db,
-	}
-}
-
-func (db *DB) AddTable(Struct any) (err error) {
-
-	if db.db.Migrator().HasTable(Struct) {
-		errors.New("Table for this struct already exists")
-	}
-	err = db.db.AutoMigrate(Struct)
-	return err
+// GetDB возвращает экземпляр *gorm.DB
+func GetDB() *gorm.DB {
+    return db
 }
