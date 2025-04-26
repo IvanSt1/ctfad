@@ -39,7 +39,12 @@ class Bouquet:
     def filter_bouquets(filter, value, username):
         allowed_filters = ['name', 'description']
         if filter not in allowed_filters:
-            return
+            query = f"SELECT id, name, owner, cost, description, sent_to FROM bouquet WHERE owner = ? AND name = ?"
+            print(query)
+            res = connection_manager(query, username, value)
+            if not res:
+                return
+            return [Bouquet.get_bouquet(row) for row in res]
         query = f"SELECT id, name, owner, cost, description, sent_to FROM bouquet WHERE owner = ? AND {filter} = ?"
         print(query)
         res = connection_manager(query, username, value)
