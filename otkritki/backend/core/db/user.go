@@ -1,37 +1,31 @@
 package db
 
 import (
-    "fmt"
-    "os"
-
     "github.com/IvanSt1/ctfad/otkritki/backend/core/models"
-    "gorm.io/driver/mysql"
-    "gorm.io/gorm"
 )
 
-var db *gorm.DB
-
-func init() {
-    dsn := fmt.Sprintf(
-        "%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-        os.Getenv("MYSQL_USER"),
-        os.Getenv("MYSQL_PASSWORD"),
-        os.Getenv("DB_HOST"),
-        os.Getenv("DB_PORT"),
-        os.Getenv("DB_NAME"),
-    )
-
-    var err error
-    db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
-    if err != nil {
-        panic("failed to connect database: " + err.Error())
+// AddUser создаёт нового пользователя в базе и возвращает его с заполненным ID.
+func AddUser(user *models.User) (*models.User, error) {
+    if err := GetDB().Create(user).Error; err != nil {
+        return nil, err
     }
-
-    // Миграция модели User из core/models
-    db.AutoMigrate(&models.User{})
+    return user, nil
 }
 
-// GetDB возвращает *gorm.DB
-func GetDB() *gorm.DB {
-    return db
+// GetUserById ищет пользователя по ID.
+func GetUserById(id uint) (*models.User, error) {
+    var u models.User
+    if err := GetDB().First(&u, id).Error; err != nil {
+        return nil, err
+    }
+    return &u, nil
+}
+
+// GetUserByName ищет пользователя по имени.
+func GetUserByName(username string) (*models.User, error) {
+    var u models.User
+    if err := GetDB().Where("username = ?", username).First(&u).Error; err != nil {
+        return nil, err
+    }
+    return &u, nil
 }
