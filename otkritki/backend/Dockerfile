@@ -1,22 +1,38 @@
 # backend/Dockerfile
 
+# 1) Builder stage: compile static Go binary
 FROM golang:1.23 AS builder
+
+# Disable CGO for static binary
+ENV CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64
+
 WORKDIR /app
 
-# Копируем go.mod (и, возможно, старый go.sum, если есть)
+# Copy go.mod first
 COPY go.mod ./
 
-# Копируем весь исходный код, чтобы go mod tidy увидел ваши импорты
+# Copy all source files
 COPY . .
 
-# Генерируем go.sum и скачиваем зависимости
-RUN go mod tidy
+# Generate go.sum and download all dependencies
+RUN go mod tidy \
+    && go mod download
 
-# Собираем бинарник с кэшем сборки
-RUN --mount=type=cache,target=/root/.cache/go-build \
-    go build -o otkritki
+# Build static binary with optimizations
+RUN go build -o otkritki -ldflags="-s -w"
 
-FROM gcr.io/distroless/base-debian11
+# 2) Final stage: minimal image with statically linked binary
+FROM gcr.io/distroless/static:nonroot AS runner
+
 WORKDIR /app
-COPY --from=builder /app/otkritki .
+COPY --from=builder /app/otkritki ./otkritki
+USER nonroot:nonroot
+ENTRYPOINT ["./otkritki"]: minimal image with statically linked binary
+FROM gcr.io/distroless/static:nonroot AS runner
+
+WORKDIR /app
+COPY --from=builder /app/otkritki ./otkritki
+USER nonroot:nonroot
 ENTRYPOINT ["./otkritki"]
