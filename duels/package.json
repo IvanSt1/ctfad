@@ -1,0 +1,18 @@
+{
+  "name": "duels",
+  "module": "index.js",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "bun-html-live-reload": "^0.1.2"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@vinejs/vine": "^1.7.1",
+    "cookie": "^0.6.0",
+    "jsonwebtoken": "^9.0.2",
+    "nunjucks": "^3.2.4"
+  }
+}

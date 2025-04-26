@@ -1,0 +1,61 @@
+    {% include 'header.html' %}
+    <div class="container">
+        <h1>Filter Bouquets</h1>
+        <form id="filter-form">
+            <div class="form-group">
+                <label for="filter_by">Filter By:</label>
+                <select id="filter_by" name="field" required>
+                    <option value="">Select Field</option>
+                    <option value="name">Name</option>
+                    <option value="description">Description</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="value">Value:</label>
+                <input type="text" id="value" name="value" placeholder="Enter value" required>
+            </div>
+            <button type="submit">Apply Filter</button>
+        </form>
+        {% if error %}
+            <h3>{{error}}</h3>
+            {% endif %}
+        <div class="bouquet-list">
+            {% if bouquets %}
+            {% if field %}
+                <h3>Result for {{field}} = {{value}}</h3>
+                {% endif %}
+            <ul>
+                {% for bouquet in bouquets %}
+                    <li>
+                        <h2>{{ bouquet.name }}</h2>
+                        <p id="description"><strong>Description:</strong> <b>{{ bouquet.description }}</b></p>
+                        <p id = "price"><strong>Price:</strong><b> ${{ bouquet.cost }}</b></p>
+                        {% if bouquet.sent_to != 'default' %}
+                        <p><strong>Sended to:</strong> <b>{{ bouquet.sent_to}}</b></p>
+                        
+                        <!-- Add more details if needed -->
+                        {% else %}
+                        <div class="container">
+                            <h3>Send this bouquet to another user</h3>
+                        <form id="bouquet-send-form" action="send" method="POST">
+                            <div class="form-group">
+                            <input type="hidden" name="bouquet_id" value="{{bouquet.id}}">
+                            <label for="user_to">User to:</label>
+                            <input type="text" name="user_to" placeholder="Enter a username" required>
+                            <button type="submit">Send</button>
+                            </div>
+                        </form>   
+                        </div>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+            {% elif field %}
+            <h3>You don't have bouquets with {{field}}={{value}}</h3>
+            {% else %}
+            <h3>You don't have bouquets yet </h3><a href="{{url_for('bouquet routes.create_bouquet')}}">Create one</a>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

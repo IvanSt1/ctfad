@@ -1,0 +1,42 @@
+{% include 'header.html' %}
+    <div class="container">
+        <h1>Given Bouquets List</h1>
+        <form id="filter-form">
+            <div class="form-group">
+                <label for="owner">Given From:</label>
+                <input type="text" id="user_from" name="user_from" placeholder="Enter username" required>
+                <input type="hidden" id="user_to" name="user_to" value="">
+            </div>
+            <button type="submit">Apply Filter</button>
+        </form>
+        <div class="bouquet-list">
+            {% if bouquets %}
+            <ul>
+                {% for bouquet in bouquets %}
+                    
+                        <h2>{{ bouquet.name }}</h2>
+                        <p><strong>Description:</strong> {{ bouquet.description }}</p>
+                        <p><strong>Price:</strong>  ${{ bouquet.cost }}</p>
+                        <p><strong>From:</strong> {{bouquet.owner}}</p>
+                        
+                        <div class="flower-info">
+                            <p><strong>Flowers:</strong></p>
+                            <ul>
+                                {% for flower in bouquet.flowers %}
+                                    <li>
+                                        <p><strong>Flower name:</strong> {{ flower.name }}</p>
+                                        <p><strong>Flower color:</strong> {{ flower.color }}</p>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p>Sorry, you don`t have given bouquets</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

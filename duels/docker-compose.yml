@@ -1,0 +1,17 @@
+services:
+  duels:
+    build:
+      context: .
+      target: release
+    restart: unless-stopped
+    pids_limit: 256
+    mem_limit: 256M
+    cpus: 0.5
+    ports:
+      - 3000:3000
+    volumes:
+      - ./data:/data
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3000
+      - DB=/data/duels.db

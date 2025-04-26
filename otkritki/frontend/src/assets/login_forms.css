@@ -1,0 +1,63 @@
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.center-container {
+    display: table;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.container {
+  width: 300px;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.form-control {
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  font-weight: bold;
+}
+
+#password {
+    margin-bottom: 20px;
+    width: 90%;
+}
+
+.login-input {
+  width: 90%;
+  padding: 10px;
+  margin: 10px 0px 10px 0px;
+  border-radius: 3px;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0px 10px 0px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+#message {
+  text-align: center;
+  color: red;
+  margin-top: 10px;
+}

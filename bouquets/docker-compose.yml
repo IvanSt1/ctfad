@@ -1,0 +1,13 @@
+services:
+  bouquet:
+    build: .
+    restart: unless-stopped
+    pids_limit: 256
+    mem_limit: 256M
+    cpus: 0.5
+    ports:
+      - 5000:5000
+    volumes:
+      - ./data:/data
+    environment:
+      - DB=/data/Bouquets.db

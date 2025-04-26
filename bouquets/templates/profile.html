@@ -1,0 +1,49 @@
+
+    {% include 'header.html' %}
+    <div class="container">
+        <h1>Profile</h1>
+        <div class="profile-info">
+            <p><strong>Name:</strong> {{ user.username }}</p>
+            <p><strong>Preferences:</strong> {{ user.preferences }}</p>
+            <p><strong>Current balance:</strong> {{user.current_balance}}</p>
+        </div>
+        {% if user.priveleged %}
+        <div>
+            <p id="error">
+                You are privilleged user! You can find preferences of other users
+            </p>
+            <p><a href="/profile/user-search">Click here</a> to find other preferences</p>
+        </div>
+        {% else %}
+        <div class="container">
+            <h3>You don`t have a subscription yet.</h3>
+            <p>"Do you want to make your floral gifts even more appropriate and valuable? <br>
+                Then subscribe to our exclusive membership, which will give you access to the preferences of other users. 
+                Now you can choose bouquets that will surely please your loved ones. 
+                <strong>Don`t miss the opportunity to make your gifts even more perfect.</strong>Subscribe today and start delighting your loved ones with beautiful flowers!"
+            </p>
+            <p>Don't want to pay the entire amount in full? 
+                Not a problem. Just select the number of months for which you are going to pay the payment. 
+                The only condition is that we need to make sure that you will be able to pay the bill in full.
+                We have own algoritms to check it, they are very reliable
+            </p>
+                <h3>Buy right now!!!</h3>
+                <form action="/profile/subscribe" method="POST">
+                    <div class="form-group">
+                    <label for="periods">Select period payment:</label>
+                    <select id="periods" name="periods" required>
+                        <option value="">Select periods</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                    </select>
+                    </div>
+                    <button type="submit">Subscribe now</button>
+                </form>
+            {% if error %}
+            <div><p id="error">Sorry, but {{error}}</p></div>
+            {% endif %}
+        {% endif %}
+</body>
+</html>

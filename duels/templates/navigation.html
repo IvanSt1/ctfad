@@ -1,0 +1,20 @@
+<nav>
+  <ul class="flex flex-row p-4 items-center w-screen bg-amber-200">
+    <li><a class="flex-none p-4 text-lg hover:cursor-pointer" href="/">Home</a></li>
+    <li><a class="flex-none p-4 text-lg hover:cursor-pointer" href="/users">Users</a></li>
+    <li><a class="flex-none p-4 text-lg hover:cursor-pointer" href="/duels">Duels</a></li>
+    
+    <span class="grow"></span>
+
+    {% if user %}
+      <li><span class="flex-none p-4 text">Logged in as <span class="text-orange-600">{{user.username}}</span></span></li>
+      <li>
+        <form id="logout" method="POST" action="/auth/logout" class="hidden"></form>
+        <button form="logout" class="inline flex-none text-lg hover:cursor-pointer">Logout</button>
+      </li>
+    {% else %}
+      <li><a class="flex-none p-4 text-lg hover:cursor-pointer" href="/auth/login">Login</a></li>
+      <li><a class="flex-none p-4 text-lg hover:cursor-pointer" href="/auth/register">Register</a></li>
+    {% endif %}
+  </ul>
+</nav>

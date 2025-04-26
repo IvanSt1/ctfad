@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="container mx-auto m-10 p-5 bg-amber-200 rounded-3xl shadow-md">
+  <h1 class="text-3xl font-bold my-10 text-center">Last {{duels.length}} duels</h1>
+
+  <ul class="flex flex-col justify-stretch">
+    {% for duel in duels %}
+      <li class="flex mb-5 p-3 flex flex-row items-center justify-center gap-2 rounded-lg bg-amber-300">
+        <p>
+          {% set winner = duel.attacker if duel.attacker_won else duel.defender %}
+          {% set loser = duel.defender if duel.attacker_won else duel.attacker %}
+          <a class="underline text-orange-600" href="/profile?username={{winner}}">{{winner}}</a>
+          defeated
+          <a class="underline text-orange-600" href="/profile?username={{loser}}">{{loser}}</a>
+        </p>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

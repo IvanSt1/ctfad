@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <!-- <link rel="icon" href="/favicon.ico"> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/vue-router@4"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+        }
+      }
+    </script>
+    <title>Открытки</title>
+  </head>
+  <body>
+    <script type="module" src="/src/main.js"></script>
+      <div id="app"> 
+        <Index/>
+        <router-view/>
+    </div>
+    
+  </body>
+</html>

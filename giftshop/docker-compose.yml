@@ -1,0 +1,9 @@
+services:
+  task:
+    build: .
+    restart: unless-stopped
+    pids_limit: 512
+    mem_limit: 512M
+    cpus: 2
+    ports: 
+      - "7490:7490"

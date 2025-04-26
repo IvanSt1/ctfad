@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="container mx-auto m-10 p-5 bg-amber-200 rounded-3xl shadow-md">
+  <h1 class="text-3xl font-bold my-10 text-center">
+    {% if user %}
+      Welcome back, {{user.username}}!
+    {% else %}
+      Log in to see your stats
+    {% endif %}
+  </h1>
+
+  {% if user %}
+    <section>
+      <h2 class="text-xl mb-2 text-center font-bold">Your profile:</h2>
+      <div class="grid grid-cols-2 max-w-80 mx-auto">
+        {% for prop in ["username", "strategy", "attack", "defense"] %}
+          <span class="font-bold">{{prop}}</span>
+          <span>{{user[prop]}}</span>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section>
+      <h2 class="text-xl mb-2 text-center font-bold">Finished duels:</h2>
+      {% for duel in duels %}
+        <div class="mb-5 p-3 flex flex-row items-center justify-center gap-2 rounded-lg bg-amber-300">
+          <p>
+            {% set opponent = duel.attacker if duel.defender == user.username else duel.defender %}
+            {% if (duel.attacker_won == 1) == (duel.attacker == user.username) %}
+              You won against
+              <a class="underline text-orange-600" href="/profile?username={{opponent}}">{{opponent}}</a>
+            {% else %}
+              You lost to
+              <a class="underline text-orange-600" href="/profile?username={{opponent}}">{{opponent}}</a>
+            {% endif %}
+          </p>
+        </div>
+      {% endfor %}
+    </section>
+
+    <section>
+      <h2 class="text-xl mb-2 text-center font-bold">Incoming challenges:</h2>
+      {% for challenge in challenges.incoming %}
+        <form id="accept-{{challenge.id}}" method="POST" action="/challenge/accept?challengeId={{challenge.id}}" class="hidden"></form>
+        <form id="deny-{{challenge.id}}" method="POST" action="/challenge/deny?challengeId={{challenge.id}}" class="hidden"></form>
+        <div class="mb-5 p-3 flex flex-row items-center justify-center gap-2 rounded-lg bg-amber-300">
+          <p>
+            <a class="underline text-orange-600" href="/profile?username={{challenge.attacker}}">{{challenge.attacker}}</a>
+            challenged you to a duel. You can
+            <a onclick="(() => {document.querySelector('#accept-{{challenge.id}}').submit(); })()" class="underline text-orange-600 hover:cursor-pointer">Accept</a>
+            or
+            <a onclick="(() => {document.querySelector('#deny-{{challenge.id}}').submit(); })()" form="deny-{{challenge.id}}" class="underline text-orange-600 hover:cursor-pointer">Deny</a>
+            challenge request.
+          </p>
+        </div>
+      {% endfor %}
+    </section>
+
+    <section>
+      <h2 class="text-xl mb-2 text-center font-bold">Outgoing challenges:</h2>
+      {% for challenge in challenges.outgoing %}
+        <p class="mb-5 mx-auto p-3 text-center rounded-lg bg-amber-300">
+          You challenged
+          <a class="underline text-orange-600" href="/profile?username={{challenge.defender}}">{{challenge.defender}}</a>
+          to a duel
+        </p>
+      {% endfor %}
+    </section>
+  {% endif %}
+</div>
+{% endblock %}

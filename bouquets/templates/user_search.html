@@ -1,0 +1,21 @@
+    {% include 'header.html' %}
+    <form id="seach-form">
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" placeholder="Enter username" required>
+        </div>
+        <button type="submit">Find</button>
+    </form>
+    {% if user %}
+    <div class="container">
+        <h1>Profile</h1>
+        <div class="profile-info">
+            <p><strong>Name:</strong> {{ user.username }}</p>
+            <p><strong>Preferences:</strong> {{ user.preferences }}</p>
+        </div>
+    </div>
+    {% else %}
+    <p>Sorry, but user not found</p>
+    {% endif %}
+</body>
+</html>

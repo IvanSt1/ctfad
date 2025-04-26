@@ -1,0 +1,28 @@
+    {% include 'header.html' %}
+    <div class="container">
+        <h1>Create Your Beautiful Bouquet</h1>
+        <form id="create-bouquet-form" action="/bouquet/create" method="POST">
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" placeholder="Enter a creative name" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <textarea id="description" name="description" rows="4" placeholder="Describe your bouquet" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="flowers">Choose Flowers:</label>
+                <select id="flowers" name="flowers" multiple required>
+                    {% for flower in flowers %}
+                        <option value="{{ flower.id }}">{{ flower.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit">Create Bouquet</button>
+            {% if error %}
+            <p>{{error}}</p>
+            {% endif %}
+        </form>
+    </div>
+</body>
+</html>

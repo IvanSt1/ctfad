@@ -1,0 +1,27 @@
+{
+  "name": "frontend",
+  "version": "0.0.0",
+  "private": false,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "axios": "^1.6.7",
+    "http-server": "^14.1.1",
+    "primeflex": "^3.3.1",
+    "primeicons": "^6.0.1",
+    "primevue": "^3.49.1",
+    "serve": "^14.2.1",
+    "vite": "^5.1.4",
+    "vue": "^3.4.15",
+    "vue-router": "^4.3.0",
+    "vuesax": "^4.0.1-alpha.25",
+    "vuetify": "^3.5.6",
+    "@vitejs/plugin-vue": "^5.0.3",
+    "@vitejs/plugin-vue-jsx": "^3.1.0",
+    "nuxt-primevue": "^0.3.1"
+  }
+}

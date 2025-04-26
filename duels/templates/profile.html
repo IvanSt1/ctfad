@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="container mx-auto m-10 p-5 bg-amber-200 rounded-3xl shadow-md">
+  <h1 class="text-3xl font-bold my-10 text-center">Profile of {{profile.username}}</h1>
+
+  <div class="grid grid-cols-2 max-w-80 mb-5 mx-auto">
+    {% for prop in ["username", "strategy", "attack", "defense"] %}
+      {% set value = profile[prop] %}
+      {% if value !== null %}
+        <span class="font-bold">{{prop}}</span>
+        <span>{{value}}</span>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  {% if challenge.incoming %}
+    <form id="accept" method="POST" action="/challenge/accept?challengeId={{challenge.incomming}}" class="hidden"></form>
+    <form id="deny" method="POST" action="/challenge/deny?challengeId={{challenge.incomming}}" class="hidden"></form>
+    <div class="mb-5 p-3 flex flex-row items-center justify-center gap-2 rounded-lg bg-amber-300">
+      <p>
+        This user challenged you to a duel. You can
+        <a onclick="(() => {document.querySelector('#accept').submit(); })()" class="underline text-orange-600 hover:cursor-pointer">Accept</a>
+        or
+        <a onclick="(() => {document.querySelector('#deny').submit(); })()" form="deny-{{challenge.id}}" class="underline text-orange-600 hover:cursor-pointer">Deny</a>
+        challenge request.
+      </p>
+    </div>
+  {% endif %}
+  
+  {% if user.username != profile.username %}
+    {% if challenge.outgoing %}
+      <p class="mb-5 mx-auto p-3 text-center rounded-lg bg-amber-300">You challenged this user to a duel</p>
+    {% else %}
+      <form id="acceptChallenge" method="POST" action="/challenge/send?username={{profile.username}}" class="hidden"></form>
+      <div class="mb-5 p-3 flex flex-row items-center justify-center gap-2 rounded-lg bg-amber-300">  
+        <button form="acceptChallenge" class="underline text-orange-600">Challenge this user to a duel!</button>
+      </div>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

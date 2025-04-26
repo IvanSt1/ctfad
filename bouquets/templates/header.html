@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bouquets</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* header.css */
+
+/* Resetting default margin and padding for ul */
+header nav ul {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+
+/* Styling navigation links */
+header nav ul li {
+    display: inline-block;
+    margin-right: 20px;
+}
+
+header nav ul li a {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+    font-size: 18px;
+    transition: color 0.3s ease;
+    padding: 10px 20px;
+    border-radius: 5px;
+}
+
+header nav ul li a:hover {
+    background-color: #4caf50;
+    color: #fff;
+}
+
+/* Styling header */
+header {
+    background-color: #f8f9fa;
+    padding: 20px 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+header nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Adding some margin to the logo */
+header nav h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+/* Media query for responsiveness */
+@media only screen and (max-width: 600px) {
+    header nav ul li {
+        margin-right: 10px;
+    }
+}
+
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/bouquet/create">Create Bouquet</a></li>
+                <li><a href="/bouquet/filter">Search bouquet</a></li>
+                <li><a href="/bouquet/given">Given bouquets</a></li>
+                <li><a href="/profile">Profile</a></li>
+                <!-- Add more navigation links as needed -->
+            </ul>
+        </nav>
+    </header>
