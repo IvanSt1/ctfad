@@ -1,0 +1,49 @@
+version: "2.9"
+services:
+  backend:
+    build:
+      context: ./backend
+    depends_on:
+      - db
+    restart: unless-stopped
+    pids_limit: 256
+    mem_limit: 1024M
+    cpus: 2
+
+    env_file:
+      - .env
+    environment:
+      - PORT=8083
+      - MYSQL_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - DBNAME=${MYSQL_DATABASE}
+    ports: 
+      - '8083:8083'
+
+  frontend:
+    build:
+      context: ./frontend
+    depends_on:
+      - backend
+      - db
+    restart: unless-stopped 
+    pids_limit: 256
+    mem_limit: 1024M
+    cpus: 2
+    ports:
+      - '31338:31338'
+
+  db:
+    image: mysql
+    restart: unless-stopped
+    pids_limit: 256
+    mem_limit: 1024M
+    cpus: 2
+    volumes:
+      - ./db/:/var/lib/mysql
+    env_file:
+      - .env
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    expose:
+      - 3306
