@@ -14,7 +14,7 @@ const HOST = process.env["HOST"] ?? "localhost";
 const PORT = parseInt(process.env["PORT"] ?? "3000");
 const DEVELOPMENT = process.env["NODE_ENV"] === "development";
 const DB_PATH = process.env["DB"] ?? ":memory:";
-const JWT_SECRET = process.env["JWT_SECRET"] ?? "no_asdasdasdasdsd";
+const JWT_SECRET = process.env["JWT_SECRET"] ?? "i-am-so-secret";
 
 const templates = nunjucks.configure('templates', {
   autoescape: true,
