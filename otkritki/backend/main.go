@@ -11,8 +11,8 @@ import (
     "github.com/gorilla/sessions"
     "golang.org/x/time/rate"
 
-    "github.com/IvanSt1/ctfad/backend/core/models"
-    "github.com/IvanSt1/ctfad/backend/core/routing"
+    "github.com/IvanSt1/ctfad/otkritki/backend/core/models"
+    "github.com/IvanSt1/ctfad/otkritki/backend/core/routing"
 )
 
 var (
