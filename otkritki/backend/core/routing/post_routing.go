@@ -11,6 +11,19 @@ import (
     "github.com/IvanSt1/ctfad/otkritki/backend/core/models"
 )
 
+// authUser сохраняет данные пользователя в сессии и возвращает их.
+func authUser(w http.ResponseWriter, r *http.Request, store *sessions.CookieStore, cookieName string, user *models.User) {
+    session, _ := store.Get(r, cookieName)
+    session.Values["authenticated"] = true
+    session.Values["gender"] = string(user.Gender)
+    session.Values["id"] = user.ID
+    session.Save(r, w)
+
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusOK)
+    json.NewEncoder(w).Encode(user)
+}
+
 // RegisterPost настраивает POST-маршруты
 func RegisterPost(r *mux.Router, store *sessions.CookieStore, cookieName string) {
     r.HandleFunc("/register", registerHandler(store, cookieName)).Methods("POST")
