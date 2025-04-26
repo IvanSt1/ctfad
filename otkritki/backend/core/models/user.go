@@ -13,7 +13,8 @@ const (
 // User описывает модель пользователя.
 type User struct {
     ID           uint   `gorm:"primaryKey"`
-    Username     string `gorm:"uniqueIndex;not null"`
+    // Явно задаём VARCHAR(100) и уникальный индекс
+    Username     string `gorm:"type:varchar(100);uniqueIndex;not null"`
     PasswordHash string `gorm:"not null"`
     Gender       Gender `gorm:"type:ENUM('male','female');not null"`
 }
